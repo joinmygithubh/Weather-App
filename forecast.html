@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>5-Day Forecast</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <h1>5-Day Weather Forecast</h1>
+    <div id="forecastContainer"></div>
+    <a href="index.html">← Back</a>
+  </div>
+
+  <script>
+    const API_KEY = '6b28baeb43d72bf569d9b423f55c3318';
+    const city = localStorage.getItem('city');
+
+    if (!city) {
+      document.getElementById('forecastContainer').innerHTML = "<p>No city selected.</p>";
+    } else {
+      fetch(`https://api.openweathermap.org/data/2.5/forecast?q=${city}&appid=${API_KEY}&units=metric`)
+        .then(res => res.json())
+        .then(data => {
+          const container = document.getElementById('forecastContainer');
+          container.innerHTML = "";
+
+          const daily = {};
+
+          data.list.forEach(item => {
+            const date = item.dt_txt.split(" ")[0];
+            if (!daily[date]) {
+              daily[date] = item;
+            }
+          });
+
+          Object.values(daily).forEach(day => {
+            const html = `
+              <div class="forecast-card">
+                <h3>${new Date(day.dt_txt).toDateString()}</h3>
+                <p>Temp: ${day.main.temp}°C</p>
+                <p>${day.weather[0].description}</p>
+                <img src="https://openweathermap.org/img/wn/${day.weather[0].icon}@2x.png" />
+              </div>
+            `;
+            container.innerHTML += html;
+          });
+        })
+        .catch(err => {
+          document.getElementById('forecastContainer').innerHTML = `<p style="color:red;">Error loading forecast.</p>`;
+        });
+    }
+  </script>
+</body>
+</html>
